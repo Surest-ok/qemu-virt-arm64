@@ -613,6 +613,8 @@ static void scheduler_monitor(void *arg)
         cherry_ext4_run_tests();
         cherry_fstools_init();
         cherry_fstools_run_tests();
+        cherry_process_init();
+        cherry_process_run_tests();
         cherry_net_init();
         cherry_net_run_tests();
         cherry_nvme_init();
@@ -621,8 +623,6 @@ static void scheduler_monitor(void *arg)
         cherry_ahci_run_tests();
         cherry_usbd_init();
         cherry_usbd_run_tests();
-        cherry_process_init();
-        cherry_process_run_tests();
         cherry_kmod_init();
         cherry_kmod_run_tests();
         cherry_ebpf_init();
