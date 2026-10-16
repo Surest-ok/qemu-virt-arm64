@@ -56,11 +56,8 @@ bsp/
 
 CherryBSP is orchestrated via the root `SConstruct`:
 ```bash
-# EL1 SMP full acceptance test
+# SMP full acceptance test
 scons test
-
-# EL2 Hypervisor mode acceptance test
-scons RUN_EL=2 test
 
 # Cross-core scheduling synchronization test
 scons SCHED_MODE=cross test
