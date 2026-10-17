@@ -298,7 +298,7 @@ int arch_fixup_alignment_fault(struct syscall_frame *frame, uint64_t esr, uint64
 
 extern void *pxCurrentTCBs[];
 
-void vPortFatalException(uint64_t esr, uint64_t elr, uint64_t far, uint64_t spsr)
+void vPortFatalException(uint64_t esr, uint64_t elr, uint64_t far, uint64_t spsr, uint64_t lr, uint64_t sp)
 {
     arch_exception_frame_t frame = {
         .elr = elr,
@@ -309,12 +309,21 @@ void vPortFatalException(uint64_t esr, uint64_t elr, uint64_t far, uint64_t spsr
 
     arch_exception_record(&frame);
     uart_log(0, "freertos",
-             "[panic] core=%d reason=exception esr=0x%lx elr=0x%lx far=0x%lx spsr=0x%lx\r\n",
+             "[panic] core=%d reason=exception esr=0x%lx elr=0x%lx far=0x%lx spsr=0x%lx lr=0x%lx sp=0x%lx\r\n",
              (int)arch_curr_cpu_id(),
              (unsigned long)esr,
              (unsigned long)elr,
              (unsigned long)far,
-             (unsigned long)spsr);
+             (unsigned long)spsr,
+             (unsigned long)lr,
+             (unsigned long)sp);
+
+    if (sp >= 0x40000000 && sp < 0x45000000) {
+        uint64_t *s = (uint64_t *)sp;
+        for (int i = 0; i < 8; i++) {
+            uart_log(0, "freertos", "  sp[%d] = 0x%016lx\r\n", i, (unsigned long)s[i]);
+        }
+    }
 
 
     for (;;) {

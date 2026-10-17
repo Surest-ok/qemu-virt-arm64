@@ -16,6 +16,7 @@ extern int cherry_mesa_run_tests(void);
 #include "uart.h"
 #include "ukernel.h"
 #include "cherry_vfs.h"
+#include "vfs_dev.h"
 #include "vfs_test.h"
 #include "vfs_stress_test.h"
 #include "cherry_shell.h"
@@ -584,6 +585,26 @@ static void scheduler_worker(void *arg)
 }
 #endif
 
+static void bsp_mount_ubuntu_rootfs(void)
+{
+    struct vfs_bdev *bdev = vfs_bdev_find("sdb");
+    if (!bdev) bdev = vfs_bdev_find("/dev/sdb");
+    if (bdev) {
+        pr_info("bsp: detected Ubuntu rootfs storage on /dev/sdb, mounting to '/'...\n");
+        int ret = vfs_mount("/dev/sdb", "/", "ext4", 0, NULL);
+        if (ret == 0) {
+            vfs_mount(NULL, "/dev", "devfs", 0, NULL);
+            mkdir("/tmp", 0777);
+            mkdir("/root", 0755);
+            mkdir("/mnt", 0755);
+            mkdir("/cherry_proc_test", 0755);
+            pr_info("bsp: Ubuntu rootfs ext4 mounted at '/' with devfs at '/dev'\n");
+        } else {
+            pr_warn("bsp: failed to mount /dev/sdb at '/' (err=%d)\n", ret);
+        }
+    }
+}
+
 static void scheduler_monitor(void *arg)
 {
     const UkernelBootInfo *boot = (const UkernelBootInfo *)arg;
@@ -609,18 +630,19 @@ static void scheduler_monitor(void *arg)
         cherry_pci_run_tests();
         cherry_sdio_init();
         cherry_sdio_run_tests();
+        cherry_ahci_init();
+        cherry_ahci_run_tests();
         cherry_ext4_init();
         cherry_ext4_run_tests();
         cherry_fstools_init();
         cherry_fstools_run_tests();
+        bsp_mount_ubuntu_rootfs();
         cherry_process_init();
         cherry_process_run_tests();
         cherry_net_init();
         cherry_net_run_tests();
         cherry_nvme_init();
         cherry_nvme_run_tests();
-        cherry_ahci_init();
-        cherry_ahci_run_tests();
         cherry_usbd_init();
         cherry_usbd_run_tests();
         cherry_kmod_init();
