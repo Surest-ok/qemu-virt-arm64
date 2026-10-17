@@ -637,6 +637,12 @@ static void scheduler_monitor(void *arg)
         cherry_fstools_init();
         cherry_fstools_run_tests();
         bsp_mount_ubuntu_rootfs();
+        extern int cherry_workqueue_init(void);
+        extern int cherry_workqueue_run_tests(void);
+        extern int cherry_health_init(void);
+        cherry_workqueue_init();
+        cherry_workqueue_run_tests();
+        cherry_health_init();
         cherry_process_init();
         cherry_process_run_tests();
         cherry_net_init();
