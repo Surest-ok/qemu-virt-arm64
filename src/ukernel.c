@@ -79,7 +79,7 @@ void ukernel_start(void)
 {
     uart_init();
     cherry_printk_init();
-    uart_log(6, "freertos", "freertos smp unikernel boot\r\n");
+    uart_log(6, "freertos", "freertos smp modular boot\r\n");
 
     gic_init(0);
     gtimer_init();

@@ -1,4 +1,4 @@
-# CherryBSP - Board Support Package for CherryOS Unikernel
+# CherryBSP - Board Support Package for Modular CherryOS
 
 CherryBSP provides the board support package for running CherryOS / FreeRTOS SMP on QEMU `virt` AArch64 (ARMv8-A Cortex-A53 multi-core architecture).
 
@@ -44,7 +44,7 @@ bsp/
 │   ├── port_fatal.c       # Low-level exception panic recorder
 │   ├── startup.S          # Early EL2/EL1 bootloader and secondary core bringup
 │   ├── string.c           # Early freestanding memory/string helpers
-│   ├── ukernel.c          # Unikernel boot sequencer and multi-task bootstrap
+│   ├── ukernel.c          # Modular kernel boot sequencer and multi-task bootstrap
 │   └── uart.c             # PL011 UART driver
 ├── linker.ld              # Bare-metal AArch64 linker script
 ├── Makefile               # GNU Make build recipe
