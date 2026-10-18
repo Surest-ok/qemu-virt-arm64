@@ -66,6 +66,7 @@ bsp_sources = [
     'src/ukernel.c',
     'src/bsp_devices.c',
     'src/port_fatal.c',
+    'src/blackbox.c',
     'src/app.c',
     'src/uart.c',
     'src/gic.c',

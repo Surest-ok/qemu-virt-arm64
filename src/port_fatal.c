@@ -1,3 +1,4 @@
+#include "blackbox.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -308,7 +309,9 @@ void vPortFatalException(uint64_t esr, uint64_t elr, uint64_t far, uint64_t spsr
     };
 
     arch_exception_record(&frame);
-    uart_log(0, "freertos",
+    blackbox_record_event("exception", esr, elr, far, sp, lr);
+    blackbox_dump(NULL);
+    uart_log(0, "freertos", 
              "[panic] core=%d reason=exception esr=0x%lx elr=0x%lx far=0x%lx spsr=0x%lx lr=0x%lx sp=0x%lx\r\n",
              (int)arch_curr_cpu_id(),
              (unsigned long)esr,

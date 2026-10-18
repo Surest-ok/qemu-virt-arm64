@@ -48,8 +48,9 @@ void uart_init(void)
 /* Write a single character to UART */
 void uart_putc(char c)
 {
-    /* Wait until transmit FIFO is not full */
-    while (UART_REG_READ(UART0_BASE, UART0_FR_OFFSET) & UART_FR_TXFF) {
+    /* Wait until transmit FIFO is not full (bounded to avoid deadlock on blocked host pipes) */
+    int timeout = 100000;
+    while ((UART_REG_READ(UART0_BASE, UART0_FR_OFFSET) & UART_FR_TXFF) && --timeout > 0) {
         /* Wait */
     }
 

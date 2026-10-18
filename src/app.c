@@ -1,3 +1,5 @@
+#include "blackbox.h"
+#include "cherry_kal.h"
 extern int cherry_ebpf_init(void);
 extern int cherry_ebpf_run_tests(void);
 extern int cherry_kmod_init(void);
@@ -643,6 +645,8 @@ static void scheduler_monitor(void *arg)
         cherry_workqueue_init();
         cherry_workqueue_run_tests();
         cherry_health_init();
+    kal_pip_verify_test();
+    blackbox_run_self_test();
         cherry_process_init();
         cherry_process_run_tests();
         cherry_net_init();
@@ -662,6 +666,8 @@ static void scheduler_monitor(void *arg)
         cherry_shell_init();
         cherry_shell_run_tests();
         cherry_shell_start();
+        extern void cherry_printk_flush(void);
+        cherry_printk_flush();
     }
 
     for (;;) {

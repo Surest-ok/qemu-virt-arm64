@@ -154,10 +154,12 @@ wait_for_mailbox:
     msr     SCTLR_EL1, x6
     isb
 
-    /* Enable IRQ */
-    msr     daifclr, #0x2
+    /* Install vector table on secondary core */
+    ldr     x6, =_freertos_vector_table
+    msr     vbar_el1, x6
+    isb
 
-    /* Jump to secondary core entry (e.g., vPortSecondaryCoreEntry) */
+    /* Jump to secondary core entry (e.g., vPortSecondaryCoreEntry) with IRQs MASKED */
     br      x8
 
 el2_setup_secondary:
