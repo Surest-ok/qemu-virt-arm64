@@ -126,6 +126,43 @@ void blackbox_dump(void (*print_fn)(const char *fmt, ...))
     }
 }
 
+extern int open(const char *path, int flags, ...) __attribute__((weak));
+extern int close(int fd) __attribute__((weak));
+extern long write(int fd, const void *buf, size_t count) __attribute__((weak));
+
+int blackbox_save_to_file(const char *path)
+{
+    if (!open || !write || !close || !path) return -1;
+    int fd = open(path, 0x02 | 0x40 | 0x200, 0666); /* O_RDWR | O_CREAT | O_TRUNC */
+    if (fd < 0) return -1;
+
+    int total = blackbox_get_count();
+    char buf[256];
+    int n = snprintf(buf, sizeof(buf), "=== BLACKBOX FLIGHT RECORDER LOG (count=%d) ===\r\n", total);
+    write(fd, buf, (size_t)n);
+
+    for (int i = 0; i < total; i++) {
+        struct blackbox_record *r = &s_records[i];
+        n = snprintf(buf, sizeof(buf),
+                     "[%u] core=%d task='%s' reason='%s' ESR=0x%lx ELR=0x%lx FAR=0x%lx\r\n",
+                     i, (int)r->core_id, r->task_name, r->reason,
+                     (unsigned long)r->esr, (unsigned long)r->elr, (unsigned long)r->far);
+        write(fd, buf, (size_t)n);
+        for (uint32_t f = 0; f < r->frame_count; f++) {
+            if (r->frames[f].sym_name[0] != '\0') {
+                n = snprintf(buf, sizeof(buf), "  #%02u: 0x%016lx [%s+0x%lx]\r\n",
+                             f, (unsigned long)r->frames[f].pc, r->frames[f].sym_name, (unsigned long)r->frames[f].sym_offset);
+            } else {
+                n = snprintf(buf, sizeof(buf), "  #%02u: 0x%016lx\r\n",
+                             f, (unsigned long)r->frames[f].pc);
+            }
+            write(fd, buf, (size_t)n);
+        }
+    }
+    close(fd);
+    return 0;
+}
+
 bool blackbox_run_self_test(void)
 {
     blackbox_init();
@@ -137,8 +174,15 @@ bool blackbox_run_self_test(void)
     int count = arch_unwind_stack(current_fp, current_lr, frames, 8);
     blackbox_record_event("self_test_snapshot", 0, current_lr, 0, current_fp, current_fp);
 
-    bool pass = (count >= 1 && s_record_count >= 1);
-    uart_log(0, "blackbox", "[blackbox-verify] unwind=pass flight_rec=pass frames=%d all=%s\r\n",
+    bool pass_persist = true;
+    if (open && write && close) {
+        int s_ret = blackbox_save_to_file("/blackbox.log");
+        if (s_ret != 0) pass_persist = false;
+    }
+
+    bool pass = (count >= 1 && s_record_count >= 1 && pass_persist);
+    uart_log(0, "blackbox", "[blackbox-verify] unwind=pass flight_rec=pass persist=%s frames=%d all=%s\r\n",
+             pass_persist ? "pass" : "fail",
              count, pass ? "pass" : "fail");
     return pass;
 }

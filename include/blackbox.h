@@ -47,6 +47,7 @@ int  blackbox_get_count(void);
 const struct blackbox_record *blackbox_get_record(int idx);
 void blackbox_dump(void (*print_fn)(const char *fmt, ...));
 int  arch_unwind_stack(uint64_t fp, uint64_t lr, struct backtrace_frame *frames, int max_frames);
+int  blackbox_save_to_file(const char *path);
 bool blackbox_run_self_test(void);
 
 #ifdef __cplusplus
